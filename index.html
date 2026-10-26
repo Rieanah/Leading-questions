@@ -1,0 +1,783 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Leading Questions Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout concept: a police traffic-camera file. Left, the camera screen; right, a witness statement form. Tabs run the lesson from witness to experiment to theory to practice. */
+:root{
+  --bg:#E9EEF1; --surface:#FFFFFF; --surface-2:#F2F5F7; --ink:#0F1B24; --muted:#4A5963; --line:#C6D0D7;
+  --accent:#0B5FA5; --accent-ink:#FFFFFF; --signal:#C2410C; --ok:#1B7A4B; --bad:#B42318;
+  --bar-bg:#14232E; --bar-fg:#E8EEF2; --hl:#FFE08A; --hl-ink:#1B1500; --ctrl:#7C8C97;
+  --v1:#6A9BC6; --v2:#4A82B5; --v3:#326AA0; --v4:#1F5489; --v5:#0F3E6F;
+  --font-display:'Big Shoulders Display','Arial Narrow',Impact,sans-serif;
+  --font-body:'Public Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1418; --surface:#152028; --surface-2:#1B2831; --ink:#E6ECF0; --muted:#9AAAB5; --line:#2B3B46;
+    --accent:#62B0F0; --accent-ink:#06151F; --signal:#FF8A57; --ok:#4FC98A; --bad:#FF8B7E;
+    --bar-bg:#223540; --bar-fg:#E8EEF2; --hl:#5C4A10; --hl-ink:#FFE9A8; --ctrl:#6F7F8A;
+    --v1:#3F6A8F; --v2:#5584AD; --v3:#6C9FC9; --v4:#8DBAE0; --v5:#B5D7F2;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1418; --surface:#152028; --surface-2:#1B2831; --ink:#E6ECF0; --muted:#9AAAB5; --line:#2B3B46;
+  --accent:#62B0F0; --accent-ink:#06151F; --signal:#FF8A57; --ok:#4FC98A; --bad:#FF8B7E;
+  --bar-bg:#223540; --bar-fg:#E8EEF2; --hl:#5C4A10; --hl-ink:#FFE9A8; --ctrl:#6F7F8A;
+  --v1:#3F6A8F; --v2:#5584AD; --v3:#6C9FC9; --v4:#8DBAE0; --v5:#B5D7F2;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--font-body); font-size:16px; line-height:1.55;
+  padding-block:28px 56px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap{max-width:1080px;margin-inline:auto}
+h1,h2,h3{margin:0;text-wrap:balance}
+h1{font-family:var(--font-display);font-weight:800;text-transform:uppercase;letter-spacing:.01em;font-size:clamp(2.6rem,7vw,4.4rem);line-height:.95}
+h2{font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:.015em;font-size:clamp(1.6rem,3.6vw,2.1rem);line-height:1.02}
+h3{font-size:1.02rem;font-weight:600}
+p{margin:0}
+.mono{font-family:var(--font-mono)}
+.kicker{font:500 .78rem/1.3 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{max-width:62ch;color:var(--muted);margin-top:12px}
+header.top{display:flex;flex-direction:column;gap:10px;padding-bottom:22px}
+
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--line);margin-bottom:22px;overflow-x:auto}
+.tab{appearance:none;background:none;border:0;border-bottom:4px solid transparent;margin-bottom:-2px;padding:12px 14px 10px;color:var(--muted);
+  font:600 .95rem/1.2 var(--font-body);cursor:pointer;display:flex;gap:8px;align-items:baseline;white-space:nowrap}
+.tab .n{font:500 .75rem var(--font-mono)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab:hover{color:var(--ink)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* layout */
+.grid2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.stack{display:flex;flex-direction:column;gap:18px;min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px;min-width:0}
+.panel > h2{margin-bottom:10px}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+
+/* camera */
+.screen{background:#0b1114;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+#scene{display:block;width:100%;aspect-ratio:16/9;height:auto}
+.screen-caption{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 12px;background:#0b1114;color:#B9C6CE;font:400 .74rem var(--font-mono);letter-spacing:.04em}
+
+/* witness form */
+.form{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;min-width:0}
+.form-bar{background:var(--bar-bg);color:var(--bar-fg);font:500 .74rem var(--font-mono);letter-spacing:.08em;text-transform:uppercase;padding:9px 16px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.form-body{padding:20px;display:flex;flex-direction:column;gap:16px}
+.q{font-size:1.18rem;line-height:1.45;font-weight:500}
+mark.verb{background:var(--hl);color:var(--hl-ink);padding:1px 6px;border-radius:3px;font-weight:600}
+.btn{appearance:none;border:2px solid var(--accent);background:var(--accent);color:var(--accent-ink);font:600 .98rem var(--font-body);
+  padding:11px 18px;border-radius:5px;cursor:pointer;align-self:flex-start;min-height:44px}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;filter:none}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap}
+.choice{flex:1 1 120px;align-self:stretch;text-align:center;font-size:1.05rem}
+.slider-box{display:flex;flex-direction:column;gap:6px}
+.readout{font:500 2.4rem/1 var(--font-mono);font-variant-numeric:tabular-nums;min-height:2.4rem}
+.readout small{font-size:1rem;color:var(--muted);margin-left:4px}
+input[type=range]{width:100%;accent-color:var(--accent);height:34px}
+.scale{display:flex;justify-content:space-between;font:400 .76rem var(--font-mono);color:var(--muted)}
+.big{font:500 3rem/1 var(--font-mono);font-variant-numeric:tabular-nums}
+.note{border-left:4px solid var(--accent);background:var(--surface-2);padding:10px 14px;font-size:.93rem;border-radius:0 4px 4px 0}
+.note.warn{border-left-color:var(--signal)}
+.pill{display:inline-block;font:500 .74rem var(--font-mono);letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:3px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
+details.opt{font-size:.9rem;color:var(--muted)}
+details.opt summary{cursor:pointer}
+select,input[type=number]{font:400 .95rem var(--font-body);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:8px 10px;min-height:40px}
+.progress{height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.progress > i{display:block;height:100%;width:0;background:var(--accent)}
+
+/* charts */
+svg text{font-family:var(--font-body)}
+svg .grid{stroke:var(--line);stroke-width:1}
+svg .rowline{stroke:var(--line);stroke-width:1;stroke-dasharray:2 4}
+svg .tick{fill:var(--muted);font:400 11px var(--font-mono)}
+svg .axlab{fill:var(--muted);font:500 12px var(--font-body)}
+svg .rowlab{fill:var(--ink);font-size:13px}
+svg .rowlab.on{font-weight:700}
+svg .val{fill:var(--ink);font:500 12px var(--font-mono)}
+svg .pub{fill:none;stroke:var(--ink);stroke-width:1.5}
+svg .meanbar{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+svg .actual{stroke:var(--ink);stroke-width:1.5;stroke-dasharray:5 4}
+svg .you{stroke:var(--signal);stroke-width:3}
+.legend{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:.84rem;color:var(--muted);margin-top:6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.key{display:inline-block;width:18px;height:0;border-top:2px solid var(--ink)}
+.key.dash{border-top-style:dashed}
+.key.you{border-top:3px solid var(--signal)}
+.key.tri{width:0;height:0;border-top:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:8px solid transparent;position:relative}
+.key.tri::after{content:"";position:absolute;left:-4px;top:2px;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:6px solid var(--ink);opacity:.0}
+.tri-icon{width:12px;height:10px}
+.chart{min-width:0;width:100%}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:grid;grid-template-columns:76px minmax(0,1fr);gap:10px;align-items:center}
+.bar-row .lab{font-size:.92rem}
+.bar-row .lab.on{font-weight:700}
+.track{height:30px;background:var(--surface-2);border:1px solid var(--line);display:flex;align-items:center;border-radius:3px;overflow:hidden}
+.fill{height:100%;transition:width .5s ease;flex:none}
+.track .tv{margin-left:8px;font:500 .84rem var(--font-mono);white-space:nowrap;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion: reduce){.fill{transition:none}}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font:500 .74rem var(--font-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+td.num,th.num{text-align:right;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+
+/* controls */
+.controls{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end;margin:14px 0}
+.ctl{display:flex;flex-direction:column;gap:4px;min-width:200px;flex:1 1 220px}
+.ctl label{font-weight:600;font-size:.92rem;display:flex;justify-content:space-between;gap:8px}
+.ctl label b{font:500 .92rem var(--font-mono)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{font:500 .8rem var(--font-mono);padding:3px 8px;border-radius:3px;background:var(--surface-2);border:1px solid var(--line)}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:10px}
+.stat div{background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:10px 12px}
+.stat b{display:block;font:500 1.4rem var(--font-mono)}
+.stat span{font-size:.82rem;color:var(--muted)}
+
+/* explain */
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.card{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card h3{font-family:var(--font-display);font-weight:700;font-size:1.35rem;text-transform:uppercase;letter-spacing:.015em}
+.obs{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.obs button{appearance:none;text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:12px 14px;font:500 .98rem var(--font-body);cursor:pointer;min-height:44px}
+.obs button:hover{border-color:var(--accent)}
+.obs .res{display:block;margin-top:8px;font-weight:400;font-size:.92rem;color:var(--muted)}
+.obs .res b{color:var(--ink)}
+details.acc{border:1px solid var(--line);border-radius:5px;background:var(--surface)}
+details.acc + details.acc{margin-top:8px}
+details.acc summary{cursor:pointer;padding:12px 14px;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:10px}
+details.acc summary::after{content:"+";font:500 1.1rem var(--font-mono);color:var(--accent)}
+details.acc[open] summary::after{content:"\2212"}
+details.acc summary::-webkit-details-marker{display:none}
+details.acc .body{padding:0 14px 14px;color:var(--muted);font-size:.95rem}
+details.acc .body p + p{margin-top:8px}
+.tag{font:500 .72rem var(--font-mono);letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:3px;margin-right:8px;border:1px solid currentColor}
+.tag.for{color:var(--ok)} .tag.against{color:var(--bad)} .tag.use{color:var(--accent)}
+
+/* practise */
+.spot{display:flex;flex-direction:column;gap:12px}
+.spot-item{border:1px solid var(--line);border-radius:5px;padding:14px;background:var(--surface);display:flex;flex-direction:column;gap:10px}
+.spot-item .qq{font-size:1.04rem;font-weight:500}
+.spot-item .fb{font-size:.93rem;color:var(--muted)}
+.spot-item .fb b.ok{color:var(--ok)} .spot-item .fb b.bad{color:var(--bad)}
+.spot-item .btn{padding:8px 14px;min-height:40px;font-size:.92rem}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt-btn{appearance:none;text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:10px 12px;font:400 .96rem var(--font-body);cursor:pointer;min-height:44px}
+.opt-btn:hover:not([disabled]){border-color:var(--accent)}
+.opt-btn.right{border-color:var(--ok);background:var(--surface-2);box-shadow:inset 4px 0 0 var(--ok)}
+.opt-btn.wrong{border-color:var(--bad);box-shadow:inset 4px 0 0 var(--bad)}
+.opt-btn[disabled]{cursor:default}
+.score{font:500 1rem var(--font-mono)}
+footer.src{margin-top:26px;font-size:.84rem;color:var(--muted);max-width:80ch}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <p class="kicker">A-level Psychology &middot; Memory &middot; Eyewitness testimony</p>
+    <h1>Leading Questions Lab</h1>
+    <p class="lede">Find out how one word in a question can change what a witness says they saw. You will give a statement, run the study with simulated participants, explain the result and test yourself. Based on Loftus &amp; Palmer (1974).</p>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Lesson stages">
+    <button class="tab" role="tab" data-tab="witness" aria-selected="true"><span class="n">1</span>Be the witness</button>
+    <button class="tab" role="tab" data-tab="experiment" aria-selected="false" tabindex="-1"><span class="n">2</span>Run the experiment</button>
+    <button class="tab" role="tab" data-tab="explain" aria-selected="false" tabindex="-1"><span class="n">3</span>Explain and evaluate</button>
+    <button class="tab" role="tab" data-tab="practise" aria-selected="false" tabindex="-1"><span class="n">4</span>Practise</button>
+  </div>
+
+  <!-- 1. WITNESS -->
+  <section id="p-witness" role="tabpanel">
+    <div class="grid2">
+      <div class="stack">
+        <div class="screen">
+          <canvas id="scene" role="img" aria-label="Overhead traffic camera view of a road junction with two cars"></canvas>
+          <div class="screen-caption"><span>CAM 02 &middot; JUNCTION 14</span><span>Scale: 10 px = 1 m</span></div>
+        </div>
+        <p class="small muted">This is a simplified animation made for this lesson, not the original film. Like the original, the clip is short and you see it once.</p>
+      </div>
+
+      <div class="form">
+        <div class="form-bar"><span>Witness statement &middot; Form W-1</span><span>Case 26/1014</span></div>
+        <div class="form-body">
+
+          <div id="st-intro" class="stage-box" style="display:flex;flex-direction:column;gap:14px">
+            <h2>You are the witness</h2>
+            <p>You will see one clip from a traffic camera, about four seconds long. Watch the junction closely. Afterwards, an officer will ask you a question and you will give your best answer.</p>
+            <details class="opt">
+              <summary>Teacher options</summary>
+              <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+                <label for="cond">Which verb does the officer use?</label>
+                <select id="cond">
+                  <option value="random" selected>Random (recommended)</option>
+                  <option value="smashed">Smashed</option>
+                  <option value="collided">Collided</option>
+                  <option value="bumped">Bumped</option>
+                  <option value="hit">Hit</option>
+                  <option value="contacted">Contacted</option>
+                </select>
+                <span>Random allocation is how the original study assigned participants to groups.</span>
+              </div>
+            </details>
+            <button class="btn" id="btn-play">Play the clip</button>
+          </div>
+
+          <div id="st-playing" hidden style="display:flex;flex-direction:column;gap:14px">
+            <h2>Watch the junction</h2>
+            <p>Look at what the drivers do and what happens next. You cannot rewind.</p>
+            <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+          </div>
+
+          <div id="st-q" hidden style="display:flex;flex-direction:column;gap:16px">
+            <span class="pill">Question 1 of 2</span>
+            <p class="q" id="q-text"></p>
+            <div class="slider-box">
+              <div class="readout" id="speed-out" aria-live="polite">&ndash;</div>
+              <input type="range" id="speed" min="10" max="60" step="1" value="35" aria-label="Estimated speed in miles per hour">
+              <div class="scale"><span>10 mph</span><span>60 mph</span></div>
+            </div>
+            <button class="btn" id="btn-submit" disabled>Submit statement</button>
+            <p class="small muted" id="q-hint">Drag the slider to choose your estimate.</p>
+          </div>
+
+          <div id="st-res" hidden style="display:flex;flex-direction:column;gap:14px">
+            <span class="pill">Statement filed</span>
+            <div><div class="big" id="res-est"></div><p class="muted small" id="res-line"></p></div>
+            <div class="note" id="res-verbline"></div>
+            <div>
+              <h3>What each verb group said in the original study</h3>
+              <div class="chart" id="chart-orig"></div>
+              <div class="legend">
+                <span><i class="key dash"></i>Actual speed, 30 mph</span>
+                <span><i class="key you"></i>Your estimate</span>
+              </div>
+            </div>
+            <p class="note warn">One answer proves nothing. Any single witness may be high or low for other reasons. The effect only shows up when you compare whole groups, which you do in tab 2.</p>
+            <button class="btn" id="btn-week">Fast-forward one week</button>
+          </div>
+
+          <div id="st-week" hidden style="display:flex;flex-direction:column;gap:16px">
+            <span class="pill">One week later &middot; Question 2 of 2</span>
+            <p class="muted">You are called back. You do not see the clip again. The officer asks one more question.</p>
+            <p class="q">Did you see any broken glass?</p>
+            <div class="btn-row">
+              <button class="btn ghost choice" data-glass="yes">Yes</button>
+              <button class="btn ghost choice" data-glass="no">No</button>
+            </div>
+          </div>
+
+          <div id="st-final" hidden style="display:flex;flex-direction:column;gap:14px">
+            <span class="pill">Reveal</span>
+            <h2>There was no broken glass</h2>
+            <p id="final-line"></p>
+            <h3>Original Experiment 2: percentage answering yes</h3>
+            <div class="bars" id="bars-orig"></div>
+            <p class="small muted">50 students per group. Their verb was &lsquo;smashed&rsquo;, &lsquo;hit&rsquo;, or no verb at all (the control question just asked how fast the cars were going).</p>
+            <div class="btn-row">
+              <button class="btn ghost" id="btn-replay">Replay the clip</button>
+              <button class="btn ghost" id="btn-again">Start again</button>
+              <button class="btn" id="btn-to-exp">Run the full experiment</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. EXPERIMENT -->
+  <section id="p-experiment" role="tabpanel" hidden>
+    <div class="stack">
+      <div class="panel">
+        <h2>Experiment 1: speed estimates</h2>
+        <p class="muted" style="max-width:70ch">Five independent groups watch the same clips. Only the verb in the question changes, so it is the independent variable. The dependent variable is the speed estimate in mph. The original study had 45 students watching seven clips, which is only 9 per group.</p>
+        <div class="controls">
+          <div class="ctl">
+            <label for="n1">Participants per group <b id="n1-out">9</b></label>
+            <input type="range" id="n1" min="5" max="200" step="1" value="9">
+          </div>
+          <div class="ctl">
+            <label for="sd">Spread of answers (SD, mph) <b id="sd-out">8</b></label>
+            <input type="range" id="sd" min="3" max="14" step="1" value="8">
+          </div>
+          <div class="btn-row">
+            <button class="btn" id="btn-run1">Run the experiment</button>
+            <button class="btn ghost" id="btn-clear1">Clear history</button>
+          </div>
+        </div>
+        <div class="chart" id="chart-strip"></div>
+        <div class="legend">
+          <span><svg class="tri-icon" viewBox="0 0 12 10" aria-hidden="true"><path d="M1 9 h10 l-5 -8 z" fill="none" stroke="var(--ink)" stroke-width="1.5"/></svg>Published group mean</span>
+          <span><i class="key" style="border-top-width:3px"></i>Simulated group mean</span>
+          <span>Dots are individual participants</span>
+        </div>
+        <div class="tablewrap" style="margin-top:12px"><table id="tbl1"></table></div>
+        <p class="note" id="ex1-note" style="margin-top:12px"></p>
+        <div>
+          <h3 style="margin-top:14px">Gap between &lsquo;smashed&rsquo; and &lsquo;contacted&rsquo; in each run</h3>
+          <div class="chips" id="hist"></div>
+          <p class="small muted" style="margin-top:6px">Try 9 per group five times, then 100 per group five times. Which gives a steadier result?</p>
+        </div>
+        <p class="small muted" style="margin-top:12px">These data are simulated around the published means, with an assumed spread. The original paper does not give the raw scores.</p>
+      </div>
+
+      <div class="panel">
+        <h2>Experiment 2: broken glass a week later</h2>
+        <p class="muted" style="max-width:70ch">Three groups saw a film of a multiple-car accident. One was asked about cars that &lsquo;smashed&rsquo; into each other, one about cars that &lsquo;hit&rsquo;, and a control group was not asked about speed. A week later everyone was asked if they saw any broken glass. There was none.</p>
+        <div class="controls">
+          <div class="ctl">
+            <label for="n2">Participants per group <b id="n2-out">50</b></label>
+            <input type="range" id="n2" min="10" max="200" step="1" value="50">
+          </div>
+          <div class="btn-row">
+            <button class="btn" id="btn-run2">Run the experiment</button>
+            <button class="btn ghost" id="btn-orig2">Load the original counts</button>
+          </div>
+        </div>
+        <div class="bars" id="bars-sim"></div>
+        <div class="stat" id="chi"></div>
+        <p class="small muted" style="margin-top:12px">Chi-squared compares the yes and no counts across the three groups (df = 2). The original counts were 16, 7 and 6 yes answers out of 50 in each group. Check the calculation by hand against the table of critical values in your course materials.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. EXPLAIN -->
+  <section id="p-explain" role="tabpanel" hidden>
+    <div class="stack">
+      <div class="panel">
+        <h2>Why does a verb change the answer?</h2>
+        <p class="muted" style="max-width:70ch;margin-bottom:14px">Loftus and Palmer offered two explanations for the result.</p>
+        <div class="two">
+          <div class="card">
+            <h3>Response-bias</h3>
+            <p>The memory is untouched. The verb changes how the witness answers. If you are unsure of the speed, &lsquo;smashed&rsquo; suggests a higher number, so you pick one.</p>
+            <p class="small muted">Predicts: the effect appears when answering, with no lasting change to memory.</p>
+          </div>
+          <div class="card">
+            <h3>Memory change (substitution)</h3>
+            <p>The information in the question is combined with the original memory, producing a new version. The witness later recalls details that fit the question, not the event.</p>
+            <p class="small muted">Predicts: false details appear later, even when the question is no longer asked.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Which result separates them?</h2>
+        <p class="muted">Select each observation to see which explanation it favours.</p>
+        <div class="obs" id="obs">
+          <button type="button" data-res="<b>Fits both.</b> A verb could bias the answer given at that moment, or it could alter the memory. This result alone cannot tell them apart.">Estimates differ between verb groups straight after the film.<span class="res" hidden></span></button>
+          <button type="button" data-res="<b>Favours memory change.</b> A week later, the false detail appears in a different question. That is hard to explain by a bias towards a higher speed, and it suggests the memory itself was altered.">A week later, the &lsquo;smashed&rsquo; group reports more broken glass that was never in the film.<span class="res" hidden></span></button>
+          <button type="button" data-res="<b>Would favour response-bias.</b> If knowing the verb was arbitrary removed the effect, the verb was only steering answers. This is an imagined result, not one Loftus and Palmer reported.">Imagine that participants are told the officer picked the verb at random, and the group differences disappear.<span class="res" hidden></span></button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Evaluation points</h2>
+        <details class="acc" open>
+          <summary><span><span class="tag for">Strength</span>Controlled laboratory experiment</span></summary>
+          <div class="body"><p>Only the verb differed between groups, and participants were randomly allocated. This supports a cause-and-effect conclusion: the wording of the question affected the estimate.</p><p>Link back: say that the leading question was the cause, not just something that went along with the difference.</p></div>
+        </details>
+        <details class="acc">
+          <summary><span><span class="tag for">Strength</span>Evidence that memory changed</span></summary>
+          <div class="body"><p>In Experiment 2, the &lsquo;smashed&rsquo; group reported more broken glass a week later than the &lsquo;hit&rsquo; and control groups. The false detail lasted beyond the moment of questioning.</p></div>
+        </details>
+        <details class="acc">
+          <summary><span><span class="tag for">Strength</span>Supported by later research</span></summary>
+          <div class="body"><p>Loftus and Zanni (1975) showed participants a film of a car accident and asked about a broken headlight. Using &lsquo;the&rsquo; (&ldquo;Did you see the broken headlight?&rdquo;) produced more yes answers than &lsquo;a&rsquo;, because &lsquo;the&rsquo; presumes the item exists. Even small words can lead.</p></div>
+        </details>
+        <details class="acc">
+          <summary><span><span class="tag against">Limitation</span>Low ecological validity</span></summary>
+          <div class="body"><p>Students watched filmed accidents in a lab. They had no personal involvement, felt no stress and faced no consequences. Real witnesses may pay closer attention and be harder to mislead.</p><p>Yuille and Cutshall (1986) interviewed witnesses to a real shooting in Canada. Their accounts stayed accurate months later and they largely resisted leading questions. This suggests the finding may not generalise to emotional, real events.</p></div>
+        </details>
+        <details class="acc">
+          <summary><span><span class="tag against">Limitation</span>Speed is hard to judge</span></summary>
+          <div class="body"><p>People are poor at estimating speed, so participants were uncertain and open to suggestion. Details that a witness is confident about, such as a familiar face, may be harder to alter.</p></div>
+        </details>
+        <details class="acc">
+          <summary><span><span class="tag against">Limitation</span>Demand characteristics and sample</span></summary>
+          <div class="body"><p>Participants may have treated the verb as a clue to what the experimenter expected. All participants were students, so the sample may not represent older witnesses or other cultures.</p></div>
+        </details>
+        <details class="acc">
+          <summary><span><span class="tag use">Application</span>Police and courts</span></summary>
+          <div class="body"><p>The research supports using open, non-leading questions with witnesses, and is one reason interview methods such as the cognitive interview ask witnesses to recall freely. Guidance for interviewing witnesses in England and Wales also favours open questions. Courts can treat leading questions in examination-in-chief with caution.</p></div>
+        </details>
+        <div class="note" style="margin-top:14px"><b>Exam tip.</b> In a longer evaluation answer, make each point do three jobs: state it, give evidence from the study, then explain what it means for how far leading questions really affect eyewitness testimony.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. PRACTISE -->
+  <section id="p-practise" role="tabpanel" hidden>
+    <div class="stack">
+      <div class="panel">
+        <h2>Spot the leading question</h2>
+        <p class="muted" style="margin-bottom:12px">A leading question suggests the answer or assumes a detail that may not exist. Decide which of these an officer should avoid.</p>
+        <div class="spot" id="spot"></div>
+        <p class="score" id="spot-score" style="margin-top:12px"></p>
+      </div>
+      <div class="panel">
+        <h2>Exam-style questions</h2>
+        <div class="spot" id="mcq"></div>
+        <p class="score" id="mcq-score" style="margin-top:12px"></p>
+        <button class="btn ghost" id="btn-reset-practise" style="margin-top:12px">Reset practice</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="src">
+    <p>Sources: Loftus, E. F. &amp; Palmer, J. C. (1974). Reconstruction of automobile destruction. <i>Journal of Verbal Learning and Verbal Behavior, 13</i>, 585&ndash;589. Loftus, E. F. &amp; Zanni, G. (1975). Eyewitness testimony: the influence of the wording of a question. <i>Bulletin of the Psychonomic Society, 5</i>, 86&ndash;88. Yuille, J. C. &amp; Cutshall, J. L. (1986). A case study of eyewitness memory of a crime. <i>Journal of Applied Psychology, 71</i>, 291&ndash;301.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var clamp=function(v,a,b){return Math.min(b,Math.max(a,v))};
+
+/* ---------- data ---------- */
+var VERBS=[
+  {id:'smashed',verb:'smashed',tail:' into',mean:40.8,c:'var(--v5)'},
+  {id:'collided',verb:'collided',tail:' with',mean:39.3,c:'var(--v4)'},
+  {id:'bumped',verb:'bumped',tail:' into',mean:38.1,c:'var(--v3)'},
+  {id:'hit',verb:'hit',tail:'',mean:34.0,c:'var(--v2)'},
+  {id:'contacted',verb:'contacted',tail:'',mean:31.8,c:'var(--v1)'}
+];
+var GLASS=[
+  {id:'smashed',label:'Smashed',yes:16,n:50,p:0.32,c:'var(--v5)'},
+  {id:'hit',label:'Hit',yes:7,n:50,p:0.14,c:'var(--v2)'},
+  {id:'control',label:'Control',yes:6,n:50,p:0.12,c:'var(--ctrl)'}
+];
+var ACTUAL=30;
+
+function randn(){var u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+
+/* ---------- chart registry (re-render on resize / tab show) ---------- */
+var redraws={};
+function reg(key,fn){redraws[key]=fn;fn()}
+function redrawAll(){Object.keys(redraws).forEach(function(k){redraws[k]()})}
+var rt=0;
+window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){fitCanvas();draw(curT);redrawAll()},120)});
+
+/* ---------- tabs ---------- */
+var tabs=$$('[role=tab]'),panels=$$('[role=tabpanel]');
+function showTab(id,focus){
+  tabs.forEach(function(t){var on=t.dataset.tab===id;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;if(on&&focus)t.focus()});
+  panels.forEach(function(p){p.hidden=(p.id!=='p-'+id)});
+  fitCanvas();draw(curT);redrawAll();
+}
+tabs.forEach(function(t,i){
+  t.addEventListener('click',function(){showTab(t.dataset.tab)});
+  t.addEventListener('keydown',function(e){
+    var j=-1;
+    if(e.key==='ArrowRight')j=(i+1)%tabs.length;
+    if(e.key==='ArrowLeft')j=(i-1+tabs.length)%tabs.length;
+    if(j>=0){e.preventDefault();showTab(tabs[j].dataset.tab,true)}
+  });
+});
+
+/* ---------- traffic camera scene ---------- */
+var cv=$('#scene'),ctx=cv.getContext('2d');
+var W=640,H=360,TI=2.6,DUR=4.2,V=134;           /* 134 px/s at 10 px per metre = 13.4 m/s = 30 mph */
+var AX=315,AY=187,BX=346.5,BY=218.5;            /* positions at the moment of contact */
+var curT=0,playing=false,raf=0;
+function fitCanvas(){
+  var r=cv.getBoundingClientRect();var dpr=window.devicePixelRatio||1;
+  var w=Math.max(2,Math.round((r.width||W)*dpr));
+  cv.width=w;cv.height=Math.round(w*H/W);
+}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath()}
+function car(x,y,h,col){
+  ctx.save();ctx.translate(x,y);ctx.rotate(h);
+  ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=6;ctx.shadowOffsetY=2;
+  ctx.fillStyle=col;rr(-22,-9.5,44,19,4);ctx.fill();
+  ctx.shadowColor='transparent';
+  ctx.fillStyle='rgba(15,25,35,.6)';rr(-8,-7.5,17,15,2.5);ctx.fill();
+  ctx.fillStyle='rgba(255,246,200,.9)';ctx.fillRect(19.5,-8,2.5,4);ctx.fillRect(19.5,4,2.5,4);
+  ctx.fillStyle='rgba(180,30,30,.9)';ctx.fillRect(-22,-8,2,4);ctx.fillRect(-22,4,2,4);
+  ctx.restore();
+}
+function line(x1,y1,x2,y2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
+function draw(t){
+  curT=t;
+  var s=cv.width/W;ctx.setTransform(s,0,0,s,0,0);
+  var dt=Math.max(0,t-TI);
+  ctx.save();
+  if(t>TI&&dt<0.25){var k=3*(1-dt/0.25);ctx.translate(Math.sin(t*90)*k,Math.cos(t*70)*k)}
+  ctx.fillStyle='#667F5C';ctx.fillRect(-10,-10,W+20,H+20);
+  /* verges and trees */
+  [[70,70,26],[120,300,22],[560,60,24],[590,290,28],[230,50,18],[440,320,20],[250,330,16]].forEach(function(p){
+    ctx.fillStyle='rgba(20,50,25,.55)';ctx.beginPath();ctx.arc(p[0]+3,p[1]+4,p[2],0,7);ctx.fill();
+    ctx.fillStyle='#3E6A3F';ctx.beginPath();ctx.arc(p[0],p[1],p[2],0,7);ctx.fill();
+  });
+  /* road */
+  ctx.fillStyle='#3A434B';ctx.fillRect(0,137,W,66);ctx.fillRect(297,0,66,H);
+  ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1.5;
+  line(0,139,297,139);line(363,139,W,139);line(0,201,297,201);line(363,201,W,201);
+  line(299,0,299,137);line(299,203,299,H);line(361,0,361,137);line(361,203,361,H);
+  ctx.setLineDash([10,9]);ctx.strokeStyle='rgba(255,255,255,.7)';
+  line(0,170,297,170);line(363,170,W,170);line(330,0,330,137);line(330,203,330,H);
+  ctx.setLineDash([]);
+  /* zebra stripes */
+  ctx.fillStyle='rgba(255,255,255,.55)';
+  for(var i=0;i<6;i++){ctx.fillRect(268,141+i*10.5,12,6);ctx.fillRect(380,141+i*10.5,12,6)}
+  /* cars */
+  var e=1-Math.exp(-6*dt);
+  var ax=t<TI?AX-V*(TI-t):AX+6*e, ay=AY+(t<TI?0:2*e), ah=t<TI?0:0.12*e;
+  var bx=t<TI?BX:BX+4*e, by=t<TI?BY+V*(TI-t):BY-6*e, bh=-Math.PI/2+(t<TI?0:-0.12*e);
+  car(bx,by,bh,'#E4572E');
+  car(ax,ay,ah,'#2F6FED');
+  /* contact flash */
+  if(dt>0&&dt<0.4){
+    var q=dt/0.4;ctx.strokeStyle='rgba(255,240,190,'+(1-q)+')';ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(337,196,6+50*q,0,7);ctx.stroke();
+    ctx.fillStyle='rgba(255,240,190,'+(0.5*(1-q))+')';ctx.beginPath();ctx.arc(337,196,4+14*q,0,7);ctx.fill();
+  }
+  ctx.restore();
+  /* camera overlay */
+  ctx.fillStyle='rgba(0,0,0,.38)';ctx.fillRect(0,0,W,32);
+  ctx.font='500 12px "IBM Plex Mono", ui-monospace, monospace';ctx.textBaseline='middle';
+  ctx.fillStyle='rgba(255,255,255,.92)';ctx.textAlign='left';ctx.fillText('CAM 02',14,17);
+  var tt=Math.min(t,DUR);
+  ctx.textAlign='right';ctx.fillText('00:0'+tt.toFixed(1),W-14,17);
+  if(playing&&Math.floor(t*2)%2===0){ctx.fillStyle='#ff4b3e';ctx.beginPath();ctx.arc(W-92,17,4,0,7);ctx.fill()}
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+}
+function playClip(onTick,done){
+  if(playing)return;playing=true;var t0=performance.now();
+  function step(now){
+    var t=(now-t0)/1000;
+    if(t<DUR){draw(t);if(onTick)onTick(t/DUR);raf=requestAnimationFrame(step)}
+    else{playing=false;draw(DUR);if(onTick)onTick(1);if(done)done()}
+  }
+  raf=requestAnimationFrame(step);
+}
+
+/* ---------- witness flow ---------- */
+var stages=['intro','playing','q','res','week','final'];
+function setStage(n){stages.forEach(function(s){$('#st-'+s).hidden=(s!==n)})}
+var cond=null,est=null,glass=null,moved=false;
+
+$('#btn-play').addEventListener('click',function(){
+  var sel=$('#cond').value;
+  cond=sel==='random'?VERBS[Math.floor(Math.random()*VERBS.length)]:VERBS.filter(function(v){return v.id===sel})[0];
+  setStage('playing');$('#bar').style.width='0%';
+  playClip(function(p){$('#bar').style.width=(p*100)+'%'},function(){
+    $('#q-text').innerHTML='About how fast were the cars going when they <mark class="verb">'+cond.verb+'</mark>'+cond.tail+' each other?';
+    moved=false;$('#speed').value=35;$('#speed-out').innerHTML='&ndash;';$('#btn-submit').disabled=true;
+    $('#q-hint').hidden=false;
+    setStage('q');
+  });
+});
+$('#speed').addEventListener('input',function(){
+  moved=true;$('#speed-out').innerHTML=this.value+'<small>mph</small>';
+  $('#btn-submit').disabled=false;$('#q-hint').hidden=true;
+});
+$('#btn-submit').addEventListener('click',function(){
+  if(!moved)return;
+  est=+$('#speed').value;
+  var d=est-ACTUAL;
+  $('#res-est').innerHTML=est+'<small style="font-size:1.1rem;color:var(--muted);margin-left:6px">mph</small>';
+  $('#res-line').textContent='The cars were travelling at 30 mph, so you were '+(d===0?'exactly right.':(d>0?d+' mph over.':(-d)+' mph under.'));
+  var pub=cond.mean.toFixed(1);
+  $('#res-verbline').innerHTML='Your officer used the verb <b>&lsquo;'+cond.verb+'&rsquo;</b>. In the original study, students asked with that verb averaged <b>'+pub+' mph</b> for clips that were really between 20 and 40 mph.';
+  setStage('res');
+  reg('orig',function(){dotPlot($('#chart-orig'))});
+});
+$('#btn-week').addEventListener('click',function(){setStage('week')});
+$$('[data-glass]').forEach(function(b){
+  b.addEventListener('click',function(){
+    glass=b.dataset.glass;
+    var msg=glass==='yes'
+      ?'You reported glass that was never there. You are in the minority in every group, but not a rare one: in the original study 32% of the ‘smashed’ group said yes.'
+      :'You answered correctly. Many people did too, but 32% of the original ‘smashed’ group said they saw glass, against 14% for ‘hit’ and 12% for the control.';
+    $('#final-line').textContent=msg;
+    setStage('final');
+    renderBars($('#bars-orig'),GLASS.map(function(g){return{label:g.label,pct:g.p*100,note:g.yes+' of '+g.n,c:g.c,on:cond&&cond.id===g.id}}));
+  });
+});
+$('#btn-replay').addEventListener('click',function(){var b=this;b.disabled=true;playClip(null,function(){b.disabled=false})});
+$('#btn-again').addEventListener('click',function(){cond=null;est=null;glass=null;draw(0);setStage('intro')});
+$('#btn-to-exp').addEventListener('click',function(){showTab('experiment');window.scrollTo({top:0})});
+
+/* ---------- charts ---------- */
+function dotPlot(el){
+  var w=Math.max(280,el.clientWidth||340),L=w<420?70:90,R=16,T=18,rowH=36,n=VERBS.length,Hh=T+n*rowH+44,min=10,max=60;
+  var x=function(v){return L+(clamp(v,min,max)-min)/(max-min)*(w-L-R)};
+  var s='<svg width="'+w+'" height="'+Hh+'" viewBox="0 0 '+w+' '+Hh+'" role="img" aria-label="Published mean speed estimate for each verb, with the actual speed and your estimate marked">';
+  for(var v=min;v<=max;v+=10){s+='<line class="grid" x1="'+x(v)+'" x2="'+x(v)+'" y1="'+(T-4)+'" y2="'+(T+n*rowH)+'"/><text class="tick" x="'+x(v)+'" y="'+(Hh-22)+'" text-anchor="middle">'+v+'</text>'}
+  s+='<text class="axlab" x="'+((L+w-R)/2)+'" y="'+(Hh-5)+'" text-anchor="middle">Estimated speed (mph)</text>';
+  VERBS.forEach(function(g,i){
+    var cy=T+i*rowH+rowH/2,on=cond&&cond.id===g.id;
+    s+='<text class="rowlab'+(on?' on':'')+'" x="'+(L-10)+'" y="'+(cy+4)+'" text-anchor="end">'+g.verb+'</text>';
+    s+='<line class="rowline" x1="'+L+'" x2="'+(w-R)+'" y1="'+cy+'" y2="'+cy+'"/>';
+    s+='<circle cx="'+x(g.mean)+'" cy="'+cy+'" r="'+(on?9:7)+'" fill="'+g.c+'" stroke="var(--ink)" stroke-width="'+(on?2.5:0)+'"/>';
+    s+='<text class="val" x="'+(x(g.mean)+13)+'" y="'+(cy+4)+'">'+g.mean.toFixed(1)+'</text>';
+  });
+  s+='<line class="actual" x1="'+x(ACTUAL)+'" x2="'+x(ACTUAL)+'" y1="'+(T-4)+'" y2="'+(T+n*rowH)+'"/>';
+  if(est!==null)s+='<line class="you" x1="'+x(est)+'" x2="'+x(est)+'" y1="'+(T-4)+'" y2="'+(T+n*rowH)+'"/>';
+  s+='</svg>';
+  el.innerHTML=s;
+}
+function renderBars(el,rows){
+  el.innerHTML=rows.map(function(r){
+    return '<div class="bar-row"><div class="lab'+(r.on?' on':'')+'">'+r.label+'</div><div class="track"><div class="fill" style="width:'+r.pct.toFixed(1)+'%;background:'+r.c+'"></div><span class="tv">'+Math.round(r.pct)+'%'+(r.note?' &middot; '+r.note:'')+'</span></div></div>';
+  }).join('');
+}
+
+/* ---------- experiment 1 ---------- */
+var g1=null,hist=[];
+function mean(a){return a.reduce(function(x,y){return x+y},0)/a.length}
+function run1(){
+  var n=+$('#n1').value,sd=+$('#sd').value;
+  g1=VERBS.map(function(v){
+    var vals=[];for(var i=0;i<n;i++){vals.push({v:Math.round(clamp(v.mean+sd*randn(),5,70)),j:Math.random()-0.5})}
+    var o={};for(var k in v)o[k]=v[k];o.vals=vals;o.sim=mean(vals.map(function(p){return p.v}));o.n=n;return o;
+  });
+  var sm=g1[0].sim,co=g1[4].sim;
+  hist.push({n:n,d:sm-co});if(hist.length>12)hist.shift();
+  renderEx1();
+}
+function strip(el){
+  if(!g1)return;
+  var w=Math.max(300,el.clientWidth||600),L=w<460?72:92,R=14,T=12,rowH=46,Hh=T+g1.length*rowH+44,min=10,max=70;
+  var x=function(v){return L+(v-min)/(max-min)*(w-L-R)};
+  var s='<svg width="'+w+'" height="'+Hh+'" viewBox="0 0 '+w+' '+Hh+'" role="img" aria-label="Simulated individual speed estimates for each verb group, with group means">';
+  for(var v=min;v<=max;v+=10){s+='<line class="grid" x1="'+x(v)+'" x2="'+x(v)+'" y1="'+T+'" y2="'+(T+g1.length*rowH)+'"/><text class="tick" x="'+x(v)+'" y="'+(Hh-22)+'" text-anchor="middle">'+v+'</text>'}
+  s+='<text class="axlab" x="'+((L+w-R)/2)+'" y="'+(Hh-5)+'" text-anchor="middle">Estimated speed (mph)</text>';
+  g1.forEach(function(g,i){
+    var cy=T+i*rowH+rowH/2-3,r=g.n>100?2:3;
+    s+='<text class="rowlab" x="'+(L-10)+'" y="'+(cy+4)+'" text-anchor="end">'+g.verb+'</text>';
+    s+='<line class="rowline" x1="'+L+'" x2="'+(w-R)+'" y1="'+cy+'" y2="'+cy+'"/>';
+    g.vals.forEach(function(p){s+='<circle cx="'+x(p.v)+'" cy="'+(cy+p.j*(rowH-18))+'" r="'+r+'" fill="'+g.c+'" opacity=".62"/>'});
+    var yb=cy+rowH/2-1;
+    s+='<path class="pub" d="M'+(x(g.mean)-5)+' '+yb+' h10 l-5 -8 z"/>';
+    s+='<line class="meanbar" x1="'+x(g.sim)+'" x2="'+x(g.sim)+'" y1="'+(cy-14)+'" y2="'+(cy+14)+'"/>';
+  });
+  s+='</svg>';el.innerHTML=s;
+}
+function renderEx1(){
+  if(!g1)return;
+  reg('strip',function(){strip($('#chart-strip'))});
+  var rows='<tr><th>Verb</th><th class="num">Simulated mean</th><th class="num">Published mean</th><th class="num">Difference</th></tr>';
+  g1.forEach(function(g){var d=g.sim-g.mean;rows+='<tr><td>'+g.verb+'</td><td class="num">'+g.sim.toFixed(1)+'</td><td class="num">'+g.mean.toFixed(1)+'</td><td class="num">'+(d>=0?'+':'')+d.toFixed(1)+'</td></tr>'});
+  $('#tbl1').innerHTML=rows;
+  var order=g1.slice().sort(function(a,b){return b.sim-a.sim}).map(function(g){return g.id}).join();
+  var pubOrder=VERBS.map(function(g){return g.id}).join();
+  var gap=g1[0].sim-g1[4].sim;
+  $('#ex1-note').innerHTML='The ‘smashed’ group averaged <b>'+g1[0].sim.toFixed(1)+' mph</b> and the ‘contacted’ group <b>'+g1[4].sim.toFixed(1)+' mph</b>, a gap of <b>'+gap.toFixed(1)+' mph</b> (published gap: 9.0 mph). The order of the five verbs '+(order===pubOrder?'<b>matches</b> the published order.':'<b>differs</b> from the published order. With small groups, chance can shuffle verbs whose true means are close together.');
+  $('#hist').innerHTML=hist.map(function(h){return '<span class="chip">n='+h.n+' &rarr; '+(h.d>=0?'+':'')+h.d.toFixed(1)+'</span>'}).join('')||'<span class="small muted">Run the experiment to start.</span>';
+}
+$('#n1').addEventListener('input',function(){$('#n1-out').textContent=this.value});
+$('#sd').addEventListener('input',function(){$('#sd-out').textContent=this.value});
+$('#btn-run1').addEventListener('click',run1);
+$('#btn-clear1').addEventListener('click',function(){hist=[];renderEx1()});
+
+/* ---------- experiment 2 ---------- */
+var g2=GLASS.map(function(g){return{id:g.id,label:g.label,yes:g.yes,n:g.n,c:g.c}});
+function chi2(rows){
+  var Y=rows.reduce(function(a,r){return a+r.yes},0),N=rows.reduce(function(a,r){return a+r.n},0),No=N-Y;
+  if(Y===0||No===0)return null;
+  var x=0;rows.forEach(function(r){var ey=r.n*Y/N,en=r.n*No/N;x+=Math.pow(r.yes-ey,2)/ey+Math.pow((r.n-r.yes)-en,2)/en});return x;
+}
+function renderEx2(){
+  renderBars($('#bars-sim'),g2.map(function(g){return{label:g.label,pct:g.yes/g.n*100,note:g.yes+' of '+g.n,c:g.c}}));
+  var x=chi2(g2),verdict;
+  if(x===null){verdict='Not defined'}
+  else if(x>=9.21){verdict='Significant at p ≤ .01'}
+  else if(x>=5.99){verdict='Significant at p ≤ .05'}
+  else{verdict='Not significant'}
+  var diff=(g2[0].yes/g2[0].n-g2[2].yes/g2[2].n)*100;
+  $('#chi').innerHTML='<div><b>'+(x===null?'–':x.toFixed(2))+'</b><span>Chi-squared (df = 2)</span></div><div><b>5.99 / 9.21</b><span>Critical values at .05 / .01</span></div><div><b>'+verdict.replace('Significant at ','')+'</b><span>'+(x!==null&&x>=5.99?'Result':'Result')+'</span></div><div><b>'+(diff>=0?'+':'')+diff.toFixed(0)+' points</b><span>Smashed minus control</span></div>';
+}
+function run2(){
+  var n=+$('#n2').value;
+  g2=GLASS.map(function(g){var y=0;for(var i=0;i<n;i++){if(Math.random()<g.p)y++}return{id:g.id,label:g.label,yes:y,n:n,c:g.c}});
+  renderEx2();
+}
+$('#n2').addEventListener('input',function(){$('#n2-out').textContent=this.value});
+$('#btn-run2').addEventListener('click',run2);
+$('#btn-orig2').addEventListener('click',function(){
+  $('#n2').value=50;$('#n2-out').textContent='50';
+  g2=GLASS.map(function(g){return{id:g.id,label:g.label,yes:g.yes,n:50,c:g.c}});renderEx2();
+});
+
+/* ---------- explain ---------- */
+$$('#obs button').forEach(function(b){
+  b.addEventListener('click',function(){
+    var r=$('.res',b);r.innerHTML=b.dataset.res;r.hidden=false;
+  });
+});
+
+/* ---------- practise ---------- */
+var SPOT=[
+  {q:'Did you see the knife in his hand?',lead:true,why:'‘The knife’ presumes there was a knife.',fix:'Did he have anything in his hand?'},
+  {q:'Describe what happened next.',lead:false,why:'It is open and adds no information of its own.'},
+  {q:'How fast was the car going when it ploughed into the barrier?',lead:true,why:'‘Ploughed into’ is a strong verb that suggests speed and force, just like ‘smashed’.',fix:'How fast was the car going?'},
+  {q:'Tell me what you remember about the driver.',lead:false,why:'The witness chooses what to report.'},
+  {q:'Did you see the stop sign before the car turned?',lead:true,why:'‘The’ assumes a stop sign was there (the Loftus and Zanni ‘the’ versus ‘a’ effect).',fix:'Was there anything at the junction? What did you notice?'},
+  {q:'Is there anything else you noticed?',lead:false,why:'It invites more recall without suggesting any detail.'}
+];
+var MCQ=[
+  {q:'In Experiment 1 of Loftus and Palmer (1974), which verb produced the highest mean speed estimate?',o:['Contacted (31.8 mph)','Hit (34.0 mph)','Collided (39.3 mph)','Smashed (40.8 mph)'],a:3,e:'Estimates rose from 31.8 mph for ‘contacted’ to 40.8 mph for ‘smashed’, though every group saw the same clips.'},
+  {q:'Why is the broken glass result in Experiment 2 important?',o:['It shows the experiment was well controlled.','It suggests the verb altered the memory itself, not just the answer given at the time.','It proves that witnesses lie when asked leading questions.','It gave a more accurate measure of speed.'],a:1,e:'The false detail appeared a week later in answer to a different question, which is hard to explain by response-bias alone.'},
+  {q:'Which is the best criticism of the study’s ecological validity?',o:['The verb was manipulated by the experimenter.','Speed was measured in miles per hour.','Students watched filmed accidents with no emotional involvement or consequences, unlike real witnesses.','The sample was too small to run a chi-squared test.'],a:2,e:'Real witnesses may be more stressed and more careful. Yuille and Cutshall (1986) found real witnesses resisted leading questions.'},
+  {q:'A police officer wants to avoid leading a witness. Which question is best?',o:['Did you see the gun?','How fast was the car going when it crashed into the wall?','Tell me everything you remember about the car.','Was the driver angry?'],a:2,e:'It is open and adds no detail. The other three presume a gun, use a loaded verb, or suggest an emotion.'},
+  {q:'Loftus and Zanni (1975) asked about ‘a broken headlight’ or ‘the broken headlight’ after a film with no broken headlight. What happened?',o:['More participants said yes to ‘the’, because it implies the headlight exists.','More participants said yes to ‘a’.','No difference was found.','Participants asked about ‘the’ remembered more detail.'],a:0,e:'The definite article presupposes the item was there, so it led more participants to say they saw it.'}
+];
+var spotDone=0,spotScore=0,mcqDone=0,mcqScore=0;
+function buildPractise(){
+  spotDone=0;spotScore=0;mcqDone=0;mcqScore=0;
+  $('#spot').innerHTML=SPOT.map(function(s,i){
+    return '<div class="spot-item" data-i="'+i+'"><div class="qq">&ldquo;'+s.q+'&rdquo;</div><div class="btn-row"><button class="btn ghost" data-ans="1">Leading</button><button class="btn ghost" data-ans="0">Neutral</button></div><div class="fb" hidden></div></div>';
+  }).join('');
+  $('#mcq').innerHTML=MCQ.map(function(m,i){
+    return '<div class="spot-item" data-i="'+i+'"><div class="qq">'+(i+1)+'. '+m.q+'</div><div class="opts">'+m.o.map(function(o,j){return '<button class="opt-btn" data-j="'+j+'">'+o+'</button>'}).join('')+'</div><div class="fb" hidden></div></div>';
+  }).join('');
+  scoreText();
+}
+function scoreText(){
+  $('#spot-score').textContent=spotDone?('Score: '+spotScore+' / '+SPOT.length+(spotDone===SPOT.length?' – complete':'')):'';
+  $('#mcq-score').textContent=mcqDone?('Score: '+mcqScore+' / '+MCQ.length+(mcqDone===MCQ.length?' – complete':'')):'';
+}
+$('#spot').addEventListener('click',function(e){
+  var b=e.target.closest('[data-ans]');if(!b)return;
+  var item=b.closest('.spot-item'),s=SPOT[+item.dataset.i],said=b.dataset.ans==='1',ok=(said===s.lead);
+  $$('button',item).forEach(function(x){x.disabled=true});
+  var fb=$('.fb',item);fb.hidden=false;
+  fb.innerHTML=(ok?'<b class="ok">Correct.</b> ':'<b class="bad">Not quite.</b> ')+(s.lead?'This is leading. ':'This is neutral. ')+s.why+(s.fix?' Better: &ldquo;'+s.fix+'&rdquo;':'');
+  spotDone++;if(ok)spotScore++;scoreText();
+});
+$('#mcq').addEventListener('click',function(e){
+  var b=e.target.closest('[data-j]');if(!b)return;
+  var item=b.closest('.spot-item'),m=MCQ[+item.dataset.i],j=+b.dataset.j,ok=(j===m.a);
+  $$('.opt-btn',item).forEach(function(x,k){x.disabled=true;if(k===m.a)x.classList.add('right')});
+  if(!ok)b.classList.add('wrong');
+  var fb=$('.fb',item);fb.hidden=false;fb.innerHTML=(ok?'<b class="ok">Correct.</b> ':'<b class="bad">Not quite.</b> ')+m.e;
+  mcqDone++;if(ok)mcqScore++;scoreText();
+});
+$('#btn-reset-practise').addEventListener('click',buildPractise);
+
+/* ---------- boot ---------- */
+buildPractise();
+fitCanvas();draw(0);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){draw(curT);redrawAll()});
+run1();renderEx2();
+})();
+</script>
+
+</body></html>
